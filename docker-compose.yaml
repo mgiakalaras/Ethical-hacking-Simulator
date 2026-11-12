@@ -1,10 +1,11 @@
 
 services:
   backend:
-    build: 
-        context: ./backend
-        dockerfile: Dockerfile
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: app_backend
+    restart: unless-stopped
     networks:
       isolated_network:
         ipv4_address: 172.22.0.2
@@ -13,33 +14,26 @@ services:
       - "5000:5000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    deploy:
-      resources:
-        limits:
-          cpus: "2"           
-          memory: "8G"        
-        reservations:
-          cpus: "1"           
-          memory: "4G"
+    mem_limit: 3g
+    cpus: 2.0
 
   redis:
     image: redis:alpine
     container_name: redis
+    restart: unless-stopped
     networks:
       isolated_network:
         ipv4_address: 172.22.0.3
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
-
-
+    mem_limit: 256m
 
   frontend:
     image: nginx:alpine
     container_name: frontend_service
+    restart: unless-stopped
     ports:
-      - "80:80" 
+      - "8090:80"
     volumes:
       - ./frontend/web:/usr/share/nginx/html
     networks:
@@ -47,14 +41,8 @@ services:
         ipv4_address: 172.22.0.4
     user: root
     command: sh -c "chmod -R 755 /usr/share/nginx/html && nginx -g 'daemon off;'"
-    deploy:
-      resources:
-        limits:
-          cpus: "0.5"         
-          memory: "2G"        
-        reservations:
-          cpus: "0.25"        
-          memory: "1G"
+    mem_limit: 256m
+    cpus: 0.5
 
 networks:
   isolated_network:
@@ -63,8 +51,6 @@ networks:
       config:
         - subnet: 172.22.0.0/16
           gateway: 172.22.0.1
-
-
 
 volumes:
   redis_data:
