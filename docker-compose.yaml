@@ -4,53 +4,41 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: app_backend
     restart: unless-stopped
-    networks:
-      isolated_network:
-        ipv4_address: 10.203.0.2
     ports:
-      - "12222:12222"
-      - "15000:15000"
+      - "12222:2222"
+      - "15000:5000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    mem_limit: 3g
-    cpus: 2.0
+    networks:
+      - simulator_network
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 3G
 
   redis:
     image: redis:alpine
-    container_name: redis
     restart: unless-stopped
-    networks:
-      isolated_network:
-        ipv4_address: 10.203.0.2
     volumes:
       - redis_data:/data
-    mem_limit: 256m
+    networks:
+      - simulator_network
 
   frontend:
     image: nginx:alpine
-    container_name: frontend_service
     restart: unless-stopped
     ports:
-      - "18090:80"
+      - "18080:80"
     volumes:
-      - ./frontend/web:/usr/share/nginx/html
+      - ./frontend/web:/usr/share/nginx/html:ro
     networks:
-      isolated_network:
-        ipv4_address: 10.203.0.2
-    user: root
-    command: sh -c "chmod -R 755 /usr/share/nginx/html && nginx -g 'daemon off;'"
-    mem_limit: 256m
-    cpus: 0.5
+      - simulator_network
 
 networks:
-  isolated_network:
+  simulator_network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 10.203.0.0/24
-          gateway: 10.203.0.1
 
 volumes:
   redis_data:
