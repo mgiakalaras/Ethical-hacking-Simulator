@@ -10,8 +10,8 @@ services:
       isolated_network:
         ipv4_address: 10.203.0.2
     ports:
-      - "2222:2222"
-      - "5000:5000"
+      - "12222:12222"
+      - "15000:15000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     mem_limit: 3g
@@ -33,7 +33,7 @@ services:
     container_name: frontend_service
     restart: unless-stopped
     ports:
-      - "8090:80"
+      - "18090:80"
     volumes:
       - ./frontend/web:/usr/share/nginx/html
     networks:
